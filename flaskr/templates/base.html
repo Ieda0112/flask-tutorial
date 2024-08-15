@@ -1,0 +1,31 @@
+<!doctype html>
+<!--{# {% block title %}でタブとウィンドウのタイトルを変更
+どう変更するかは各ページのHTMLファイルで指定(これはあくまでテンプレート,base) #}-->
+<title>{% block title %}{% endblock %} - Flaskr</title>
+<!--静的なビューのスタイル定義が書いてあるファイルをリンクさせる-->
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<nav>
+  <h1>Flaskr</h1>
+  <ul><!--{# {% %}で制御フロー文　今回はif文 #}-->
+    {% if g.user %}<!--ログインしていれば名前とログアウトURLを表示-->
+      <li><span>{{ g.user['username'] }}</span>
+      <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+    {% else %}<!--ログインしていなければ登録URLとログインURLを表示-->
+      <li><a href="{{ url_for('auth.register') }}">Register</a>
+      <li><a href="{{ url_for('auth.login') }}">Log In</a>
+    {% endif %}
+  </ul>
+</nav>
+<section class="content">
+  <header>
+    <!--{# {% block header %}でページ内のタイトルを変更
+    どう変更するかは各ページのHTMLファイルで指定(これはあくまでテンプレート,base) #}-->
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}<!--flash内のメッセージについてforループ-->
+    <!--flashにはエラーを入れていたので、エラーの内容が表示される-->
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  <!--{# {% block content %}{% endblock %}の間にフォームやブログ投稿などの各ページのコンテンツを配置する #}-->
+  {% block content %}{% endblock %}
+</section>

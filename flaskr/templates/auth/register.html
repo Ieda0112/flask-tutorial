@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+<!--このファイルがbase.htmlのブロックを置き換えることを指示している-->
+
+<!--base.htmlのtitleとheaderを定義-->
+{% block header %}
+  <h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %}
+
+<!--base.htmlのcontentを定義-->
+{% block content %}
+  <form method="post"><!--HTMLのpostメソッドのformを呼び出す-->
+    <label for="username">Username</label>
+    <!--キー(name)として"username"を設定し、入力と関連付ける-->
+    <input name="username" id="username" required>
+    <label for="password">Password</label>
+    <!--type="password"で入力を⚫︎や＊にする-->
+    <input type="password" name="password" id="password" required>
+    <!--送信ボタン、ボタンの文字は"Register"-->
+    <input type="submit" value="Register">
+  </form>
+{% endblock %}
+
+<!--base.htmlのtitle, header, contentを置き換えている-->

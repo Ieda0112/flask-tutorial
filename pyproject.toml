@@ -1,0 +1,18 @@
+[project] #プロジェクトのメタデータと依存関係
+name = "flaskr"
+version = "1.0.0"
+description = "The basic blog app built in the Flask tutorial."
+dependencies = [
+    "flask", #flaskに依存
+]
+
+[build-system] #ビルドシステムの設定
+requires = ["flit_core<4"] #必要なパッケージ
+build-backend = "flit_core.buildapi" #ビルドシステムのバックエンド
+
+[tool.pytest.ini_options] #pytestの設定
+testpats = ["tests"]
+
+[tool.coverage.run] #coverageの設定
+branch = true
+source = ["flaskr"]
