@@ -73,17 +73,3 @@ def delete(id):
     Post.delete(id)
     return redirect(url_for('blog.index'))
 
-#投稿一覧を表示する
-@bp.route('/api/posts/<int:id>')
-def json_index(id):
-    post = Post.get(id)
-    
-    data = {
-        "id":post.id,
-        "author_id":post.author_id,
-        "created":post.created,
-        "title":post.title,
-        "body":post.body
-    }
-    
-    return jsonify(data)

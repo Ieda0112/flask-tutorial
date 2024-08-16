@@ -24,7 +24,19 @@ def create_app(test_config = None):
 
     @app.route('/hello')
     def hello():
+        import requests
+        response = requests.get('http://127.0.0.1:5000/api/posts/49')
+        data = response.json()
+
+        # データの内容を表示
+        print(data)
+
+        # データのキーと値を確認
+        for key, value in data.items():
+            print(f'{key}: {value}')
+
         return 'Hello, World!'
+    
     
     #db.pyで定義した関数を今回作っているインスタンスappで使えるようにする
     from . import db
@@ -39,5 +51,9 @@ def create_app(test_config = None):
     app.register_blueprint(blog.bp)
     #blogをメインと据えたので/と/blog.indexを同じものと見做させる
     app.add_url_rule('/', endpoint = 'index')
+
+    #apiフォルダ内のblog.pyをインポート
+    from .api import blog
+    app.register_blueprint(blog.bp)
 
     return app

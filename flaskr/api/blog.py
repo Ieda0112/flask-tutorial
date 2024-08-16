@@ -9,22 +9,25 @@ from flaskr.db import get_db
 from flaskr.models.post import Post
 
 #auth.pyと違ってurl_prefixがない→ブログがメイン機能なのでつけないのが理に適っている
-bp = Blueprint('blog', __name__)
+bp = Blueprint('api_blog', __name__, url_prefix='/api')
 
 #投稿一覧を表示する
-@bp.route('/api/<int:id>')
+@bp.route('/<int:id>')
 def index(id):
-    post = Post.get(id)
+    posts = Post.index()
     """
-    data = {
-        "id":post['id'],
-        "author_id":post['author_id'],
-        "created":post['created'],
-        "title":post['title'],
-        "body":post['body']
-    }
+    Post.index()がfetchallで複数あるからそれぞれを処理する必要がある
     """
-    return jsonify()
+    for post in posts:
+        data = {
+            "id":post.id,
+            "author_id":post.author_id,
+            "created":post.created,
+            "title":post.title,
+            "body":post.body
+        }
+        return jsonify(data)
+    
 
 #新しい投稿を追加する　auth.pyのregisterに似てる
 @bp.route('/create', methods = ('GET', 'POST'))
@@ -39,10 +42,16 @@ def create():
         if error is not None:
             flash(error)
         else:
+            data = {
+                "id":post.id,
+                "author_id":post.author_id,
+                "created":post.created,
+                "title":post.title,
+                "body":post.body
+            }
             return redirect(url_for('blog.index'))#blog.indexのページへリダイレクト
         
     return render_template('blog/create.html')
-
 
 #投稿の削除、修正のためにユーザーとポスト作成者が一致するか確認する関数
 def get_post(id, check_author=True):
@@ -58,7 +67,7 @@ def get_post(id, check_author=True):
 
 #投稿を修正して上書きする
 #入力されたIDをURLに組み込んでいる
-@bp.route('/<int:id>/update', methods=('GET', 'POST'))
+@bp.route('/api/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
     post = get_post(id)
@@ -71,13 +80,36 @@ def update(id):
         if error is not None:
             flash(error)
         else:
+            data = {
+                "id":post.id,
+                "author_id":post.author_id,
+                "created":post.created,
+                "title":post.title,
+                "body":post.body
+            }
             return redirect(url_for('blog.index'))
-    return render_template('blog/update.html', post=post)
+    return jsonify(data)
 
 #投稿の削除
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/api/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
     get_post(id)
     Post.delete(id)
     return redirect(url_for('blog.index'))
+
+
+#投稿一覧を表示する
+@bp.route('/posts/<int:id>')
+def json_index(id):
+    post = Post.get(id)
+    
+    data = {
+        "id":post.id,
+        "author_id":post.author_id,
+        "created":post.created,
+        "title":post.title,
+        "body":post.body
+    }
+    
+    return jsonify(data)
