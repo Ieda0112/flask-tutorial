@@ -12,12 +12,11 @@ from flaskr.models.post import Post
 bp = Blueprint('api_blog', __name__, url_prefix='/api')
 
 #投稿一覧を表示する
-@bp.route('/<int:id>')
-def index(id):
+@bp.route('/')
+def index():
     posts = Post.index()
     """
     Post.index()がfetchallで複数あるからそれぞれを処理する必要がある
-    """
     for post in posts:
         data = {
             "id":post.id,
@@ -26,7 +25,8 @@ def index(id):
             "title":post.title,
             "body":post.body
         }
-        return jsonify(data)
+    return jsonify(data)
+    """
     
 
 #新しい投稿を追加する　auth.pyのregisterに似てる
@@ -67,7 +67,7 @@ def get_post(id, check_author=True):
 
 #投稿を修正して上書きする
 #入力されたIDをURLに組み込んでいる
-@bp.route('/api/<int:id>/update', methods=('GET', 'POST'))
+@bp.route('/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
     post = get_post(id)
@@ -91,7 +91,7 @@ def update(id):
     return jsonify(data)
 
 #投稿の削除
-@bp.route('/api/<int:id>/delete', methods=('POST',))
+@bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
     get_post(id)
