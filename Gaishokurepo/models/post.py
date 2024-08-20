@@ -12,7 +12,7 @@ class Post:
         self.rating = rating
 
     @classmethod #選択した日付のリストを返したい
-    def list_withDate(cls,date):
+    def DateList(cls,date):
         db = get_db()
         posts = db.execute(
             'SELECT p.id, date, name, genre, rating'
@@ -24,7 +24,7 @@ class Post:
         return posts
     
     @classmethod #直近10件のリストを返したい
-    def list_new(cls,date):
+    def NewList(cls):
         db = get_db()
         posts = db.execute(
             'SELECT p.id, date, name, genre, rating'
@@ -44,7 +44,7 @@ class Post:
         (id,)
         ).fetchone()
 
-        if post is None: #そもそも投稿がないとき
+        if post is None: #投稿がないとき
             return None
         else:
             #投稿の各要素を取得

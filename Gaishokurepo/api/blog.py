@@ -10,116 +10,97 @@ from Gaishokurepo.models.post import Post
 #auth.pyと違ってurl_prefixがない→ブログがメイン機能なのでつけないのが理に適っている
 bp = Blueprint('api_blog', __name__, url_prefix='/api')
 
-#投稿一覧を表示する
-@bp.route('/')
+#日付選択時の投稿一覧と直近10件の投稿を表示させたい
+@bp.route('/', methods = ('GET', 'POST'))
 def index():
-    date = None
-    if date is None:
-        return None
+    if request.method == 'POST':
+        date = request.form['date']
     else:
-        posts = Post.index_withDate()
-    """
-    Post.index()がfetchallで複数あるからそれぞれを処理する必要がある
+        date = None
+    daily_data = []
+    recently_data = []
+
+    if date is None:
+        return jsonify({
+            "error": "Date parameter is required."
+        }), 400
+    else:
+        posts = Post.DateList(date)
+        for post in posts:
+            data = {
+                "id" : post['id'],
+                "date" : post['date'],
+                "name" : post['name'],
+                "genre" : post['genre'],
+                "rating" : post['rating']
+            }
+            daily_data.append(data)
+    
+    posts = Post.NewList()
     for post in posts:
         data = {
-            "id":post.id,
-            "author_id":post.author_id,
-            "created":post.created,
-            "title":post.title,
-            "body":post.body
+            "id" : post['id'],
+            "date" : post['date'],
+            "name" : post['name'],
+            "genre" : post['genre'],
+            "rating" : post['rating']
         }
-    return jsonify(data)
-    """
-    
+        recently_data.append(data)
 
-#新しい投稿を追加する　auth.pyのregisterに似てる
+    return jsonify({
+        "daily_data":daily_data,
+        "recently_data":recently_data
+    })
+
+#新しい投稿を追加する
 @bp.route('/create', methods = ('GET', 'POST'))
 def create():
     if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
-        author_id = g.user['id']
-
-        error, post = Post.create(title,body,author_id)
-        if error is not None:
-            flash(error)
+        data = request.get_json()
+        if (#データが正しいか確認
+            'id' not in data or 
+            'date' not in data or
+            'name' not in data or
+            'genre' not in data or
+            'rating' not in data or
+            id != data['id']):
+            return jsonify({'error': 'Missing data'}), 400
         else:
-            data = {
-                "id":post.id,
-                "author_id":post.author_id,
-                "created":post.created,
-                "title":post.title,
-                "body":post.body
-            }
-            return redirect(url_for('blog.index'))#blog.indexのページへリダイレクト
+            date = request.form['date']
+            name = request.form['name']
+            genre = request.form['genre']
+            rating = request.form['rating']
+            error, post = Post.create(date, name, genre, rating)
+
+            if error is not None:
+                flash(error)
+            else:
+                create_data = {
+                    "id" : post.id,
+                    "date" : post.date,
+                    "name" : post.name,
+                    "genre" : post.genre,
+                    "rating" : post.rating
+                }# 更新成功のレスポンス
+                return jsonify({
+                    'message': 'Post successfully created',
+                    'created_post': create_data
+                }), 200
         
-    return render_template('blog/create.html')
+    # return render_template('blog/create.html')
 
-#投稿の削除、修正のためにユーザーとポスト作成者が一致するか確認する関数
-def get_post(id, check_author=True):
+#投稿の削除、修正のために投稿が存在するか確認する関数
+def get_post(id):
     post = Post.get(id)
-
-    if post is None: #そもそも投稿がないとき
-        abort(404, f"Post id {id} doesn't exist.")
-    #投稿者とユーザのIDが一致しない時
-    if check_author and post.author_id != g.user['id']:
-        abort(403)
-    #abort(404)はNot Found abort(403)はForbiddenのエラーを表示する
-    return post
-
-#投稿を修正して上書きする
-#入力されたIDをURLに組み込んでいる
-@bp.route('/<int:id>/update', methods=('GET', 'POST'))
-def update(id):
-    post = get_post(id)
-    data = request.get_json()
-    
-    if (#データが正しいか確認
-        'id' not in data or 
-        'title' not in data or
-        'body' not in data or
-        id != data['id']):
-        return jsonify({'error': 'Missing data'}), 400
+    if post is None: #投稿がないとき
+        return jsonify({'error': f"Post id {id} doesn't exist."}), 404
+        #abort(404)はNot Foundのエラーを表示する
     else:
-        title = data['title']
-        body = data['body']
-        error, post = Post.update(id,title,body)
-    
-        if error is not None:
-            flash(error)
-        else:
-            updated_post = {
-                "id":post.id,
-                "author_id":post.author_id,
-                "created":post.created,
-                "title":post.title,
-                "body":post.body
-            }
-            # 更新成功のレスポンス
-            return jsonify({
-                'message': 'Post updated successfully',
-                'updated_post': updated_post
-            }), 200
+        return post
 
 #投稿の削除
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/<int:id>/delete', methods=('POST'))
 def delete(id):
     get_post(id)
     Post.delete(id)
-    return redirect(url_for('blog.index'))
-
-
-#投稿一覧を表示する
-@bp.route('/posts/<int:id>')
-def json_index(id):
-    post = Post.get(id)
-    
-    data = {
-        "id":post.id,
-        "author_id":post.author_id,
-        "created":post.created,
-        "title":post.title,
-        "body":post.body
-    }
-    
-    return jsonify(data)
+    return jsonify({"message": "Post successfully deleted"}), 200

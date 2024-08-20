@@ -28,12 +28,6 @@ def create_app(test_config = None):
     from . import db
     db.init_app(app)
 
-    #blog.pyで定義したブループリントをインポート
-    from . import blog
-    app.register_blueprint(blog.bp)
-    #blogをメインと据えたので/と/blog.indexを同じものと見做させる
-    app.add_url_rule('/', endpoint = 'index')
-
     #apiフォルダ内のblog.pyをインポート
     from .api import blog
     app.register_blueprint(blog.bp)
