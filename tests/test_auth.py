@@ -1,6 +1,6 @@
 import pytest
 from flask import g,session
-from flaskr.db import get_db
+from Gaishokurepo.db import get_db
 
 #登録機能のテスト
 def test_register(client, app):

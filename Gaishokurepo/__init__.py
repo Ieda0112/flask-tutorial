@@ -8,7 +8,7 @@ def create_app(test_config = None):
     CORS(app, origins=["*"], methods=["GET", "POST", "PATCH", "PUT", "DELETE"])
     app.config.from_mapping(    #アプリのデフォルトの構成を設定する
         SECRET_KEY = 'dev',     #データを安全に保つための鍵、本当はランダムな値で上書きするべき
-        DATABASE = os.path.join(app.instance_path, 'flaskr.sqlite'),   #SQLiteデータベースを保存するパス
+        DATABASE = os.path.join(app.instance_path, 'gaishokurepo.sqlite'),   #SQLiteデータベースを保存するパス
     )
 
     if test_config is None:
@@ -23,30 +23,10 @@ def create_app(test_config = None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    @app.route('/hello')
-    def hello():
-        import requests
-        response = requests.get('http://127.0.0.1:5000/api/posts/49')
-        data = response.json()
-
-        # データの内容を表示
-        print(data)
-
-        # データのキーと値を確認
-        for key, value in data.items():
-            print(f'{key}: {value}')
-
-        return 'http://127.0.0.1:5000/api/1/update'
-    
     
     #db.pyで定義した関数を今回作っているインスタンスappで使えるようにする
     from . import db
     db.init_app(app)
-
-    #auth.pyで定義したブループリントをインポート
-    from . import auth
-    app.register_blueprint(auth.bp)
 
     #blog.pyで定義したブループリントをインポート
     from . import blog

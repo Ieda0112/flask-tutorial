@@ -1,5 +1,5 @@
 import pytest
-from flaskr.db import get_db
+from Gaishokurepo.db import get_db
 
 #ホーム画面のテスト
 def test_index(client, auth):

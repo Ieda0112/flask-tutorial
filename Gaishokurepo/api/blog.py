@@ -3,10 +3,9 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from flaskr.auth import login_required
-from flaskr.db import get_db
+from Gaishokurepo.db import get_db
 #モデル層として作成したpost.pyのPostクラスをインポート
-from flaskr.models.post import Post
+from Gaishokurepo.models.post import Post
 
 #auth.pyと違ってurl_prefixがない→ブログがメイン機能なのでつけないのが理に適っている
 bp = Blueprint('api_blog', __name__, url_prefix='/api')
@@ -14,7 +13,11 @@ bp = Blueprint('api_blog', __name__, url_prefix='/api')
 #投稿一覧を表示する
 @bp.route('/')
 def index():
-    posts = Post.index()
+    date = None
+    if date is None:
+        return None
+    else:
+        posts = Post.index_withDate()
     """
     Post.index()がfetchallで複数あるからそれぞれを処理する必要がある
     for post in posts:
@@ -31,7 +34,6 @@ def index():
 
 #新しい投稿を追加する　auth.pyのregisterに似てる
 @bp.route('/create', methods = ('GET', 'POST'))
-@login_required #ログインしているか確認
 def create():
     if request.method == 'POST':
         title = request.form['title']
@@ -68,7 +70,6 @@ def get_post(id, check_author=True):
 #投稿を修正して上書きする
 #入力されたIDをURLに組み込んでいる
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
-@login_required
 def update(id):
     post = get_post(id)
     data = request.get_json()
@@ -99,30 +100,9 @@ def update(id):
                 'message': 'Post updated successfully',
                 'updated_post': updated_post
             }), 200
-    
-        
-
-    # if request.method == 'POST':
-    #     title = request.form['title']
-    #     body = request.form['body']
-    #     error, post = Post.update(id,title,body)
-    
-    #     if error is not None:
-    #         flash(error)
-    #     else:
-    #         data = {
-    #             "id":post.id,
-    #             "author_id":post.author_id,
-    #             "created":post.created,
-    #             "title":post.title,
-    #             "body":post.body
-    #         }
-    #         return jsonify(data)
-    # return redirect(url_for('hello'))
 
 #投稿の削除
 @bp.route('/<int:id>/delete', methods=('POST',))
-@login_required
 def delete(id):
     get_post(id)
     Post.delete(id)

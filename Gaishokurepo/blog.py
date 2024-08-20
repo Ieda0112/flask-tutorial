@@ -3,10 +3,9 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from flaskr.auth import login_required
-from flaskr.db import get_db
+from Gaishokurepo.db import get_db
 #モデル層として作成したpost.pyのPostクラスをインポート
-from flaskr.models.post import Post
+from Gaishokurepo.models.post import Post
 
 #auth.pyと違ってurl_prefixがない→ブログがメイン機能なのでつけないのが理に適っている
 bp = Blueprint('blog', __name__)
@@ -19,7 +18,6 @@ def index():
 
 #新しい投稿を追加する　auth.pyのregisterに似てる
 @bp.route('/create', methods = ('GET', 'POST'))
-@login_required #ログインしているか確認
 def create():
     if request.method == 'POST':
         title = request.form['title']
@@ -50,7 +48,6 @@ def get_post(id, check_author=True):
 #投稿を修正して上書きする
 #入力されたIDをURLに組み込んでいる
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
-@login_required
 def update(id):
     post = get_post(id)
 
@@ -67,7 +64,6 @@ def update(id):
 
 #投稿の削除
 @bp.route('/<int:id>/delete', methods=('POST',))
-@login_required
 def delete(id):
     get_post(id)
     Post.delete(id)
