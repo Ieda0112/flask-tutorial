@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, jsonify
+    Blueprint, flash, g, redirent, render_template, request, url_for, jsonify
 )
 from werkzeug.exceptions import abort
 
@@ -11,7 +11,7 @@ from Gaishokurepo.models.post import Post
 bp = Blueprint('api_blog', __name__, url_prefix='/api')
 
 #日付選択時の投稿一覧と直近10件の投稿を表示させたい
-@bp.route('/', methods = ('GET', 'POST'))
+@bp.route('/', methods = ["GET", "POST"])
 def index():
     if request.method == 'POST':
         date = request.form['date']
@@ -53,7 +53,7 @@ def index():
     })
 
 #新しい投稿を追加する
-@bp.route('/create', methods = ('GET', 'POST'))
+@bp.route('/create', methods = ["GET", "POST"])
 def create():
     if request.method == 'POST':
         data = request.get_json()
@@ -86,7 +86,7 @@ def create():
                     'message': 'Post successfully created',
                     'created_post': create_data
                 }), 200
-        
+    return jsonify({"error": "Date parameter is required."}), 400
     # return render_template('blog/create.html')
 
 #投稿の削除、修正のために投稿が存在するか確認する関数
@@ -99,7 +99,7 @@ def get_post(id):
         return post
 
 #投稿の削除
-@bp.route('/<int:id>/delete', methods=('POST'))
+@bp.route('/<int:id>/delete', methods = ["GET", "POST"])
 def delete(id):
     get_post(id)
     Post.delete(id)

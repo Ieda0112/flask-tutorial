@@ -17,8 +17,8 @@ class Post:
         posts = db.execute(
             'SELECT p.id, date, name, genre, rating'
             ' FROM post p '
-            ' WHERE p.date = ?',
-            ' ORDER BY rating DESC'
+            ' WHERE p.date = ?'
+            ' ORDER BY rating DESC',
             (date,)
         ).fetchall()
         return posts
