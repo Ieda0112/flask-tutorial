@@ -71,24 +71,54 @@ def get_post(id, check_author=True):
 @login_required
 def update(id):
     post = get_post(id)
-
-    if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
+    data = request.get_json()
+    
+    if (#データが正しいか確認
+        'id' not in data or 
+        'title' not in data or
+        'body' not in data or
+        id != data['id']):
+        return jsonify({'error': 'Missing data'}), 400
+    else:
+        title = data['title']
+        body = data['body']
         error, post = Post.update(id,title,body)
     
         if error is not None:
             flash(error)
         else:
-            data = {
+            updated_post = {
                 "id":post.id,
                 "author_id":post.author_id,
                 "created":post.created,
                 "title":post.title,
                 "body":post.body
             }
-            return redirect(url_for('blog.index'))
-    return jsonify(data)
+            # 更新成功のレスポンス
+            return jsonify({
+                'message': 'Post updated successfully',
+                'updated_post': updated_post
+            }), 200
+    
+        
+
+    # if request.method == 'POST':
+    #     title = request.form['title']
+    #     body = request.form['body']
+    #     error, post = Post.update(id,title,body)
+    
+    #     if error is not None:
+    #         flash(error)
+    #     else:
+    #         data = {
+    #             "id":post.id,
+    #             "author_id":post.author_id,
+    #             "created":post.created,
+    #             "title":post.title,
+    #             "body":post.body
+    #         }
+    #         return jsonify(data)
+    # return redirect(url_for('hello'))
 
 #投稿の削除
 @bp.route('/<int:id>/delete', methods=('POST',))

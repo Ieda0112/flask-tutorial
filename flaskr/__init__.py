@@ -1,9 +1,11 @@
 import os
 from flask import Flask
+from flask_cors import CORS
 
 def create_app(test_config = None):
     # アプリケーションの作成と設定
     app = Flask(__name__, instance_relative_config = True)
+    CORS(app, origins=["*"], methods=["GET", "POST", "PATCH", "PUT", "DELETE"])
     app.config.from_mapping(    #アプリのデフォルトの構成を設定する
         SECRET_KEY = 'dev',     #データを安全に保つための鍵、本当はランダムな値で上書きするべき
         DATABASE = os.path.join(app.instance_path, 'flaskr.sqlite'),   #SQLiteデータベースを保存するパス
@@ -35,7 +37,7 @@ def create_app(test_config = None):
         for key, value in data.items():
             print(f'{key}: {value}')
 
-        return 'Hello, World!'
+        return 'http://127.0.0.1:5000/api/1/update'
     
     
     #db.pyで定義した関数を今回作っているインスタンスappで使えるようにする
