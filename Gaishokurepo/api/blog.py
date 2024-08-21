@@ -57,8 +57,13 @@ def recently_list():
 #新しい投稿を追加する
 @bp.route('/create', methods = ["GET", "POST"])
 def create():
-    error, post = Post.create(20240810, "restaurant", "Hamburg", 4)
-    print("hoge")
+    error, post = Post.create("2002-01-12", "restaurant", "genre", 5)
+    create_data = {
+        "date" : post.date,
+        "name" : post.name,
+        "genre" : post.genre,
+        "rating" : post.rating
+    }
 
     if request.method == 'POST':
         data = request.get_json()
@@ -89,7 +94,10 @@ def create():
                     'message': 'Post successfully created',
                     'created_post': create_data
                 }), 200
-    return jsonify({"error": "There is not POST"}), 400
+    else:
+        return jsonify({
+            "Not POST": create_data
+            }), 400
 
 #投稿の削除、修正のために投稿が存在するか確認する関数
 def get_post(id):

@@ -6,5 +6,5 @@ CREATE TABLE post(
     date DATE NOT NULL, /*外食に行った日*/
     name TEXT NOT NULL, --レストランの名前
     genre TEXT NOT NULL, --ご飯のジャンル
-    rating INTEGER NOT NULL, --評価
+    rating INTEGER NOT NULL --評価
 );
