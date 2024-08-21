@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, flash, g, redirent, render_template, request, url_for, jsonify
+    Blueprint, flash, g, redirect, render_template, request, url_for, jsonify
 )
 from werkzeug.exceptions import abort
 
@@ -10,20 +10,18 @@ from Gaishokurepo.models.post import Post
 #auth.pyと違ってurl_prefixがない→ブログがメイン機能なのでつけないのが理に適っている
 bp = Blueprint('api_blog', __name__, url_prefix='/api')
 
-#日付選択時の投稿一覧と直近10件の投稿を表示させたい
-@bp.route('/', methods = ["GET", "POST"])
-def index():
+#日付選択時の投稿一覧を表示させたい
+@bp.route('/daily', methods = ["GET", "POST"])
+def daily_list():
     if request.method == 'POST':
         date = request.form['date']
     else:
         date = None
+
     daily_data = []
-    recently_data = []
 
     if date is None:
-        return jsonify({
-            "error": "Date parameter is required."
-        }), 400
+        return jsonify({"error": "Date parameter is required."}), 400
     else:
         posts = Post.DateList(date)
         for post in posts:
@@ -35,6 +33,13 @@ def index():
                 "rating" : post['rating']
             }
             daily_data.append(data)
+        return jsonify({"daily_data":daily_data,}), 200
+    
+
+#日付選択時の投稿一覧と直近10件の投稿を表示させたい
+@bp.route('/recently', methods = ["GET", "POST"])
+def recently_list():
+    recently_data = []
     
     posts = Post.NewList()
     for post in posts:
@@ -47,23 +52,21 @@ def index():
         }
         recently_data.append(data)
 
-    return jsonify({
-        "daily_data":daily_data,
-        "recently_data":recently_data
-    })
+    return jsonify({"recently_data":recently_data}), 200
 
 #新しい投稿を追加する
 @bp.route('/create', methods = ["GET", "POST"])
 def create():
+    error, post = Post.create(20240810, "restaurant", "Hamburg", 4)
+    print("hoge")
+
     if request.method == 'POST':
         data = request.get_json()
         if (#データが正しいか確認
-            'id' not in data or 
             'date' not in data or
             'name' not in data or
             'genre' not in data or
-            'rating' not in data or
-            id != data['id']):
+            'rating' not in data):
             return jsonify({'error': 'Missing data'}), 400
         else:
             date = request.form['date']
@@ -73,7 +76,7 @@ def create():
             error, post = Post.create(date, name, genre, rating)
 
             if error is not None:
-                flash(error)
+                return jsonify({"error":error}), 400
             else:
                 create_data = {
                     "id" : post.id,
@@ -86,8 +89,7 @@ def create():
                     'message': 'Post successfully created',
                     'created_post': create_data
                 }), 200
-    return jsonify({"error": "Date parameter is required."}), 400
-    # return render_template('blog/create.html')
+    return jsonify({"error": "There is not POST"}), 400
 
 #投稿の削除、修正のために投稿が存在するか確認する関数
 def get_post(id):
