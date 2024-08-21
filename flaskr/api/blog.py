@@ -15,6 +15,17 @@ bp = Blueprint('api_blog', __name__, url_prefix='/api')
 @bp.route('/')
 def index():
     posts = Post.index()
+    all_data = []
+    for post in posts:
+        data = {
+            "id":post['id'],
+            "author_id":post['author_id'],
+            "created":post['created'],
+            "title":post['title'],
+            "body":post['body']
+        }
+        all_data.append(data)
+    return jsonify(all_data)
     """
     Post.index()がfetchallで複数あるからそれぞれを処理する必要がある
     for post in posts:
@@ -30,7 +41,7 @@ def index():
     
 
 #新しい投稿を追加する　auth.pyのregisterに似てる
-@bp.route('/create', methods = ('GET', 'POST'))
+@bp.route('/create', methods = ["GET", "POST"])
 @login_required #ログインしているか確認
 def create():
     if request.method == 'POST':
@@ -60,17 +71,17 @@ def get_post(id, check_author=True):
     if post is None: #そもそも投稿がないとき
         abort(404, f"Post id {id} doesn't exist.")
     #投稿者とユーザのIDが一致しない時
-    if check_author and post.author_id != g.user['id']:
-        abort(403)
+    # if check_author and post.author_id != g.user['id']:
+        # abort(403)
     #abort(404)はNot Found abort(403)はForbiddenのエラーを表示する
     return post
 
 #投稿を修正して上書きする
 #入力されたIDをURLに組み込んでいる
-@bp.route('/<int:id>/update', methods=('GET', 'POST'))
-@login_required
+@bp.route('/<int:id>/update', methods=["GET", "POST"])
 def update(id):
     post = get_post(id)
+    
     data = request.get_json()
     
     if (#データが正しいか確認
@@ -85,7 +96,7 @@ def update(id):
         error, post = Post.update(id,title,body)
     
         if error is not None:
-            flash(error)
+            return jsonify({'error': error}), 400
         else:
             updated_post = {
                 "id":post.id,
@@ -121,7 +132,7 @@ def update(id):
     # return redirect(url_for('hello'))
 
 #投稿の削除
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/<int:id>/delete', methods=["POST"])
 @login_required
 def delete(id):
     get_post(id)
