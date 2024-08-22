@@ -14,7 +14,7 @@ bp = Blueprint('api_blog', __name__, url_prefix='/api')
 @bp.route('/daily', methods = ["GET", "POST"])
 def daily_list():
     if request.method == 'POST':
-        date = request.form['date']
+        date = request.json['date']
     else:
         date = None
 
@@ -57,14 +57,6 @@ def recently_list():
 #新しい投稿を追加する
 @bp.route('/create', methods = ["GET", "POST"])
 def create():
-    error, post = Post.create("2002-01-12", "restaurant", "genre", 5)
-    create_data = {
-        "date" : post.date,
-        "name" : post.name,
-        "genre" : post.genre,
-        "rating" : post.rating
-    }
-
     if request.method == 'POST':
         data = request.get_json()
         if (#データが正しいか確認
@@ -74,10 +66,10 @@ def create():
             'rating' not in data):
             return jsonify({'error': 'Missing data'}), 400
         else:
-            date = request.form['date']
-            name = request.form['name']
-            genre = request.form['genre']
-            rating = request.form['rating']
+            date = request.json['date']
+            name = request.json['name']
+            genre = request.json['genre']
+            rating = request.json['rating']
             error, post = Post.create(date, name, genre, rating)
 
             if error is not None:
@@ -96,7 +88,7 @@ def create():
                 }), 200
     else:
         return jsonify({
-            "Not POST": create_data
+            "Not POST": "no data"
             }), 400
 
 #投稿の削除、修正のために投稿が存在するか確認する関数
@@ -109,8 +101,12 @@ def get_post(id):
         return post
 
 #投稿の削除
-@bp.route('/<int:id>/delete', methods = ["GET", "POST"])
-def delete(id):
+@bp.route('/delete', methods = ["GET", "POST"])
+def delete():
+    if request.method == 'POST':
+        id = request.json['id']
+    else:
+        id = None
     get_post(id)
     Post.delete(id)
     return jsonify({"message": "Post successfully deleted"}), 200
